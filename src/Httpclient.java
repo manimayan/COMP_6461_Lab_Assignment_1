@@ -1,7 +1,13 @@
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Httpclient {
+
+	static final String HEADER = "header";
+	static final String BODY = "body";
 
 	public static void main(String[] args) {
 		System.out.println("\t##~COMP6461 HTTPCLIENT~##\n");
@@ -28,35 +34,78 @@ public class Httpclient {
 			} else if (command.contentEquals("httpc help post")) {
 				System.out.println("\nusage: httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL");
 				System.out
-				.println("\tPost executes a HTTP POST request for a given URL with inline data or from file.");
+						.println("\tPost executes a HTTP POST request for a given URL with inline data or from file.");
 				System.out.println("\t\t-v\tPrints the detail of the response such as protocol, status, and headers."
 						+ "\n\t\t-h\tkey:value Associates headers to HTTP Request with the format 'key:value'"
 						+ "\n\t\t-d\tstringAssociates an inline data to the body HTTP POST request."
 						+ "\n\t\t-f\tfileAssociates the content of a file to the body HTTP POST request.\n");
 
+			} else if (command.contains("-t")) {
+				// httpc -t 'http://google.com'
+				try {
+					String URL = null;
+					String[] input = command.split(" ");
+					for (String string : input) {
+						if (string.startsWith("\'") && string.endsWith("\'")) {
+							URL = string.replace("\'", "");
+						}
+					}
+					responseMap = HttpMethods.APICall(URL);
+					System.out.println("\n" + responseMap.get(HEADER));
+					System.out.println("\n" + responseMap.get(BODY));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else if (command.contains("-o") && (command.contains(HttpMethods.GETURL))) {
+				//httpc -v 'http://httpbin.org/get?course=networking&assignment=1' -o 6461.txt
+				try {
+					String fileName = null;
+					String[] input = command.split(" ");
+					for (String string : input) {
+						if (string.endsWith(".txt")) {
+							fileName = string;
+						}
+					}
+					responseMap = HttpMethods.APICall(HttpMethods.GETURL);
+					PrintWriter write = new PrintWriter(new FileOutputStream(fileName));
+					write.println(responseMap.get(HEADER));
+					write.println(responseMap.get(BODY));
+					write.close();
+					System.out.println("File Write Completed");
+				} catch (IOException e) {
+					System.out.println("Exception Ocuured: Problem in wrting file");
+				}
+			} else if (command.contains("get") && command.contains("-r") && (command.contains(HttpMethods.REDIRECT_URL))) {
+				// httpc get -r 'https://httpbingo.org/redirect-to?url=http://www.example.com'
+				try {
+					responseMap = HttpMethods.APICall(HttpMethods.REDIRECT_URL);
+					System.out.println("\n" + responseMap.get(HEADER));
+					System.out.println("\n" + responseMap.get(BODY));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			} else if ((command.contains("get")) && (command.contains("-v")) && (command.contains(HttpMethods.GETURL))) {
 				// httpc get -v 'http://httpbin.org/get?course=networking&assignment=1'
 				try {
-					responseMap = HttpMethods.get(HttpMethods.GETURL);
-					System.out.println("\n" + responseMap.get("header"));
-					System.out.println("\n" + responseMap.get("body"));
+					responseMap = HttpMethods.APICall(HttpMethods.GETURL);
+					System.out.println("\n" + responseMap.get(HEADER));
+					System.out.println("\n" + responseMap.get(BODY));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} else if ((command.contains("get")) && (command.contains(HttpMethods.GETURL))) {
 				// httpc get 'http://httpbin.org/get?course=networking&assignment=1'
 				try {
-					responseMap = HttpMethods.get(HttpMethods.GETURL);
-					System.out.println("\n" + responseMap.get("body"));
+					responseMap = HttpMethods.APICall(HttpMethods.GETURL);
+					System.out.println("\n" + responseMap.get(BODY));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			} else if ((command.contains("post")) && (command.contains("-h")) && (command.contains("-d"))
-					&& (command.contains(HttpMethods.POSTURL))) {
+			} else if ((command.contains("post")) && (command.contains("-h")) && (command.contains("-d")) && (command.contains(HttpMethods.POSTURL))) {
 				// httpc post -h Content-Type:application/json --d '{"Assignment": 1}' http://httpbin.org/post
 				try {
 					responseMap = HttpMethods.post(HttpMethods.POSTURL, "{\"Assignment\": 1}");
-					System.out.println("\n" + responseMap.get("body"));
+					System.out.println("\n" + responseMap.get(BODY));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

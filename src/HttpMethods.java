@@ -13,8 +13,9 @@ public class HttpMethods {
 	static final Integer PORT = 80;
 	static final String GETURL = "http://httpbin.org/get?course=networking&assignment=1";
 	static final String POSTURL = "http://httpbin.org/post";
+	static final String REDIRECT_URL = "https://httpbingo.org/redirect-to?url=http://www.example.com";
 
-	public static Map<String, String> get(String url) throws IOException {
+	public static Map<String, String> APICall(String url) throws IOException {
 
 		Map<String, String> responseMap = new HashMap<>();
 		URL urlObject = new URL(url);
